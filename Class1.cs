@@ -44,5 +44,16 @@ namespace pract13_3_karamov
             get { return ozu; }
             set { ozu = value; }
         }
+        public int CountOldSystems(Computer computer)
+        {
+            if (computer.System == "Windows 7" || computer.System == "Windows 8")
+            {
+                return 1;
+            }
+            else
+            {
+                return 0;
+            }
+        }
     }
 }

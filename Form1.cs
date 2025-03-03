@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -168,30 +169,37 @@ namespace pract13_3_karamov
             }
             showListInGrid();
         }
-        private void deleteComputer(int index)
+        private void deleteComputer(int key, int index)
         {
-            Computers.Remove(index);
-            numbers.Remove(numbers[index]);
+            Computers.Remove(key);
+            numbers.RemoveAt(index);
             showListInGrid();
         }
-        private void redactComputer(int index, int number, string name, string system, string cpu, string gpu, int ozu)
+        private void redactComputer(int key, int number, string name, string system, string cpu, string gpu, int ozu)
         {
-            Computers[index].Number = number;
-            Computers[index].Name = name;
-            Computers[index].System = system;
-            Computers[index].CPU = cpu;
-            Computers[index].GPU = gpu;
-            Computers[index].OZU = ozu;
+            Computers.Remove(key);
+            int index = dataGridView1.SelectedCells[0].RowIndex;
+            numbers.RemoveAt(index);
+            numbers.Add(number);
+            Computer computer = new Computer();
+            Computers.Add(number, computer);
+            computer.Number = number;
+            computer.Name = name;
+            computer.System = system;
+            computer.CPU = cpu;
+            computer.GPU = gpu;
+            computer.OZU = ozu;
+            MessageBox.Show("Данные о компьютере изменены");
             showListInGrid();
         }
 
         private void button1_Click(object sender, EventArgs e)
         {
-            if (textBox1.Text != string.Empty && textBox2.Text != string.Empty && textBox3.Text != string.Empty && comboBox1.Text != string.Empty)
+            if (textBox1.Text != string.Empty && comboBox2.Text != string.Empty && comboBox3.Text != string.Empty && comboBox1.Text != string.Empty)
             {
                 try
                 {
-                    addComputer(Convert.ToInt32(numericUpDown1.Value), textBox1.Text, comboBox1.Text, textBox2.Text, textBox3.Text, Convert.ToInt32(numericUpDown3.Value));
+                    addComputer(Convert.ToInt32(numericUpDown1.Value), textBox1.Text, comboBox1.Text, comboBox2.Text, comboBox3.Text, Convert.ToInt32(numericUpDown3.Value));
                 }
                 catch
                 {
@@ -205,32 +213,50 @@ namespace pract13_3_karamov
         }
         private void УдалитьToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            int selectedRow = dataGridView1.SelectedCells[0].RowIndex + 1;
-            DialogResult dr = MessageBox.Show("Удалить компьютер?", "", MessageBoxButtons.YesNo);
-            if (dr == DialogResult.Yes)
+            try
             {
-                deleteComputer(selectedRow);
+                int selectedRow = dataGridView1.SelectedCells[0].RowIndex + 1;
+                int key = Convert.ToInt32(dataGridView1.SelectedCells[0].Value);
+                DialogResult dr = MessageBox.Show("Удалить компьютер?", "", MessageBoxButtons.YesNo);
+                if (dr == DialogResult.Yes)
+                {
+                    try
+                    {
+                        deleteComputer(key, selectedRow - 1);
+                    }
+                    catch
+                    {
+                        MessageBox.Show("Ошибка");
+                    }
+                }
+            }
+            catch
+            {
+                MessageBox.Show("Ошибка, Нужно выбрать ячейку номер");
             }
         }
         private void РедактироватьToolStripMenuItem_Click(object sender, EventArgs e)
         {
             try
             {
-                int selectedRow = dataGridView1.SelectedCells[0].RowIndex + 1;
-                numericUpDown1.Value = Computers[selectedRow].Number;
-                textBox1.Text = Computers[selectedRow].Name;
-                comboBox1.Text = Computers[selectedRow].System;
-                textBox2.Text = Computers[selectedRow].CPU;
-                textBox3.Text = Computers[selectedRow].GPU;
-                numericUpDown1.Value = Computers[selectedRow].OZU;
+                int key = Convert.ToInt32(dataGridView1.SelectedCells[0].Value);
+                numericUpDown1.Value = Computers[key].Number;
+                textBox1.Text = Computers[key].Name;
+                comboBox1.Text = Computers[key].System;
+                comboBox2.Text = Computers[key].CPU;
+                comboBox3.Text = Computers[key].GPU;
+                numericUpDown3.Value = Computers[key].OZU;
                 button1.Visible = false;
                 button1.Enabled = false;
+                numericUpDown1.Enabled = false;
+                numericUpDown1.Visible = false;
+                label1.Visible = false;
                 button2.Visible = true;
                 button2.Enabled = true;
             }
             catch
             {
-                MessageBox.Show("Ошибка");
+                MessageBox.Show("Ошибка, выберите ячейку номер");
             }
         }
         private void button2_Click(object sender, EventArgs e)
@@ -238,8 +264,8 @@ namespace pract13_3_karamov
             int selectedRow = dataGridView1.SelectedCells[0].RowIndex + 1;
             try
             {
-                redactComputer(selectedRow, Convert.ToInt32(numericUpDown1.Value), textBox1.Text, comboBox1.Text, textBox2.Text, textBox3.Text, Convert.ToInt32(numericUpDown3.Value));
-                MessageBox.Show("Данные о компьютере изменены");
+                int key = Convert.ToInt32(dataGridView1.SelectedCells[0].Value);
+                redactComputer(key, Convert.ToInt32(numericUpDown1.Value), textBox1.Text, comboBox1.Text, comboBox2.Text, comboBox3.Text, Convert.ToInt32(numericUpDown3.Value));
             }
             catch
             {
@@ -249,6 +275,20 @@ namespace pract13_3_karamov
             button1.Enabled = true;
             button2.Visible = false;
             button2.Enabled = false;
+            numericUpDown1.Enabled = true;
+            numericUpDown1.Visible = true;
+            label1.Visible = true;
+        }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+            int count = 0;
+            foreach (int i in Computers.Keys)
+            {
+                Computer computer = Computers[i];
+                count += computer.CountOldSystems(computer);
+            }
+            label7.Text = $"Устарело систем: {count}";
         }
     }
 }
